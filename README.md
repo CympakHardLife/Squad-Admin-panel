@@ -6,7 +6,6 @@
 
 **English** · [Русский](README.ru.md)
 
-[![CI](https://github.com/CympakHardLife/Squad-Admin-panel/actions/workflows/ci.yml/badge.svg)](https://github.com/CympakHardLife/Squad-Admin-panel/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-22c55e.svg?style=for-the-badge)](LICENSE)
 [![Go](https://img.shields.io/badge/Go-1.25-00ADD8?style=for-the-badge&logo=go&logoColor=white)](https://go.dev)
 [![Platform](https://img.shields.io/badge/Platform-Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)]()
