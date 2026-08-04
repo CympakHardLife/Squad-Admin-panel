@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'source/**' ]
+  pull_request:
+    branches: [ main ]
+    paths: [ 'source/**' ]
+
+jobs:
+  test:
+    name: Build & test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: source/go.mod
+          cache-dependency-path: source/go.sum
+
+      - name: Vet
+        working-directory: source
+        run: go vet ./...
+
+      - name: Test
+        working-directory: source
+        run: go test ./...
+
+      - name: Build check (Windows target)
+        working-directory: source
+        env:
+          GOOS: windows
+          GOARCH: amd64
+          CGO_ENABLED: 0
+        run: go build -o /dev/null .
