@@ -48,12 +48,13 @@ from there verbatim.
 | `internal/rcon/squad.go` | 281 | Parsers for ListPlayers, ListSquads, maps, layers, chat, ShowServerInfo |
 | `internal/rcon/manager.go` | 341 | Background loop: auto-connect, reconnect, polling, cache snapshot |
 | `internal/confedit/confedit.go` | 284 | List and edit `.cfg` files with backups, structured Admins.cfg, map rotation |
+| `internal/mods/mods.go` | ~360 | "Mods" section (1.0.8): mods folder scan, name/version from `.uplugin`/`mod.json`, settings file editing with backups |
 | `internal/logwatch/logwatch.go` | 290 | Tail `SquadGame.log`, join/leave/error/teamkill events |
 | `internal/procman/procman.go` | ~800 | Start/stop/restart server (with opMu against double start), process detection and clean shutdown, auto-restart |
 | `internal/automation/automation.go` | 1088 | Scheduler, 5 rule types from API.md |
 | `internal/web/server.go` | ~960 | HTTP skeleton: routes, SSE hub, status, players, console, maps, static (auth removed) |
 | `internal/web/handlers.go` | ~995 | Bans, player database, configs, logs, process, automation, journal, settings |
-| `internal/web/static/app.js` | ~4000 | SPA: i18n layer (first ~600 lines) + core (router, SSE, modals, toasts) + 12 sections |
+| `internal/web/static/app.js` | ~4700 | SPA: i18n layer (first ~650 lines) + core (router, SSE, modals, toasts) + 13 sections |
 | `internal/web/static/index.html` | ~185 | Page skeleton, SVG icon sprite, clock |
 | `internal/web/static/style.css` | ~800 | "Field Command Post" theme (military khaki) |
 | `internal/web/static/fonts/` | 16 files | Oswald / Inter / JetBrains Mono, woff2, latin + cyrillic |
@@ -384,3 +385,22 @@ The backend was not changed. All changes are frontend and static assets.
 - **`style.css`** — the `#lang-toggle` button style was added alongside `#theme-toggle`.
 - **`const Version`** in `internal/web/server.go` = `"1.0.6"`.
 - `index.html` footer updated to version 1.0.6.
+
+## Changes in 1.0.7 (chat colors by role)
+
+- **Chat message highlighting by sender role.** New package
+  `internal/roles` — a resolver "SteamID/EOS id → group from Admins.cfg" with
+  lazy re-reading of the file by mtime/size. Used in `main.go` when a chat
+  message arrives.
+- **DB**: `schemaVersion` bumped to 2 — the migration adds a `role` column
+  to `log_events`; a `Role` field on `store.LogEvent` (JSON `role`).
+- **Config**: a `chatColors` section in `config.json`
+  (`enabled` / `adminChannel` / `roles`), defaults in `internal/config`.
+- **API**: `GET /api/settings` extended with `chatColors` and `chatRoles`;
+  new `PUT /api/settings/chatcolors` (hex color validation) + a `chatcolors`
+  SSE event for live updates of open tabs. See `API-EN.md`.
+- **Frontend**: highlighting in the dashboard feed and Logs → Events
+  (`chatColorFor`/`chatColorStyle` in `app.js`), a "Chat colors" card in
+  Settings, RU/EN translations, `.cc-row` styles in `style.css`.
+- **`const Version`** in `internal/web/server.go` = `"1.0.7"`; the
+  `index.html` footer updated.

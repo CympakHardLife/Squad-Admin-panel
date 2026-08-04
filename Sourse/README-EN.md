@@ -88,6 +88,7 @@ automation — works over RCON alone.
 | **Player database** (База игроков) | Nickname history, sessions, total playtime, punishments, admin notes |
 | **Configs** (Конфиги) | Edit any `.cfg`, structured editor for `Admins.cfg` (groups and permissions via checkboxes), map rotation editor |
 | **Logs** (Логи) | Chat, teamkills, joins and leaves, errors; raw log viewer |
+| **Mods** (Моды) | Mod list from a user-specified folder, editing mod settings files with backups |
 | **Process** (Процесс) | Start, stop, and restart the server, warn players, auto-restart on crash |
 | **Automation** (Автоматизация) | Interval and scheduled messages, scheduled commands and restarts, seeding mode |
 | **Journal** (Журнал) | Everything the panel has done: commands, bans, config edits, rule triggers |
@@ -357,3 +358,69 @@ The `config.json`, `data.db` format, and API did not change. The update is simpl
 a replacement of `SquadAdmin.exe`.
 
 Version 1.0.6
+
+---
+
+## What's New in 1.0.7
+
+### Chat Message Colors by Role
+
+Chat messages can now be highlighted with a color based on the sender's
+role — a group from `Admins.cfg` (SuperAdmin, Moderator, etc.).
+
+**How to configure:** **Settings → Chat colors**.
+- A master switch "Colorize chat messages by sender role".
+- A custom color for every group from `Admins.cfg`: tick the checkbox next to
+  a role and pick a color. The group list is read from the file automatically.
+- A separate color for the **ChatAdmin** channel (admin chat) — applied to
+  messages in that channel when the sender has no role color.
+
+**Where the highlighting is visible:** in the event feed on the dashboard and
+in **Logs → Events** (both live messages and history). Hovering over a
+highlighted message shows the role name. Messages from players without a role
+keep the default color.
+
+The role is resolved from the sender's SteamID/EOS id at the moment of the
+message and stored in the journal. Color changes apply immediately in all open
+tabs — no page reload needed.
+
+The setting is stored in `config.json` (the `chatColors` section). On first
+start a `role` column is added to the event journal in `data.db`
+automatically — the update is still just a replacement of `SquadAdmin.exe`.
+
+Version 1.0.7
+
+---
+
+## What's New in 1.0.8
+
+### "Mods" Section
+
+A new **Mods** section for servers running mods from the Steam Workshop and
+beyond.
+
+**How to configure:** **Settings → Mods** — set the path to the folder that
+contains your mods (e.g. `...\steamapps\workshop\content\393380` or a custom
+folder). The **"Check folder"** button immediately shows how many mods were
+found. Each subfolder inside is treated as a separate mod.
+
+**What the section shows:**
+- A list of all mods: name (read from `.uplugin`/`mod.json` when present),
+  folder, version, and settings status.
+- A mod with the **"available"** status has settings files — click the mod to
+  open the file list, then click any file to edit it.
+- The **"will appear after the game starts"** status means the mod has not
+  created its settings files yet. Most mods create them on the first server
+  launch with the mod — start the server and the panel re-scans the folder
+  automatically (the list refreshes on every server process start and stop).
+
+**Editing:** `.cfg`, `.ini`, `.json`, `.txt`, and `.config` files are
+supported. Before every write a backup is created next to the file
+(`<file>.bak-<time>`, the last 10 are kept), and the write is atomic — same
+as for server configs. Escaping the mod folder through the file path is not
+possible.
+
+The mods folder path is stored in `config.json` (the `server.modsDir` field).
+The update is still just a replacement of `SquadAdmin.exe`.
+
+Version 1.0.8

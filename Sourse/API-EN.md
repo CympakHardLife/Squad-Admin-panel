@@ -19,11 +19,13 @@ Scenario: the panel runs **on the same machine** as the Squad server (home hosti
 | Players, console, maps, bans, player database, automation | RCON only |
 | Server configs, logs | path to the Squad server folder on the same disk |
 | Start, stop, restart, auto-restart on crash | path to server exe (local process) |
+| Mods | path to the mods folder on the same disk |
 
 If the server path is not configured — `/api/configs/*` and `/api/logs/*` return 409
 `{"error":"Путь к папке Squad-сервера не настроен","code":"server_dir_not_configured"}` <!-- "Squad server folder path is not configured" -->
-`/api/process/*` — 409 `{"code":"process_not_configured"}`.
-The UI hides the corresponding sections (see `GET /api/status` → `remote.configured`, `process.supported`).
+`/api/process/*` — 409 `{"code":"process_not_configured"}`,
+`/api/mods*` without a mods folder path — 409 `{"code":"mods_dir_not_configured"}`.
+The UI hides the corresponding sections (see `GET /api/status` → `remote.configured`, `process.supported`, `mods.configured`).
 
 ---
 
@@ -51,6 +53,7 @@ This mitigates DNS-rebinding (a foreign domain resolving to `127.0.0.1`) and CSR
   "rcon": { "configured": true, "connected": true, "host": "1.2.3.4", "port": 21114,
             "lastError": "", "latencyMs": 42, "lastUpdate": "2026-08-02T15:00:00Z" },
   "remote": { "configured": false, "lastError": "" },
+  "mods": { "configured": false },
   "server": {
     "name": "MyServer #1", "playerCount": 78, "maxPlayers": 100,
     "publicQueue": 3, "reserveQueue": 0,
@@ -75,6 +78,7 @@ Events (`event:` + JSON in `data:`):
 | `log` | `LogEvent` (see below) |
 | `notice` | `{"level":"info\|warn\|error","text":"..."}` |
 | `chat` | `LogEvent` of type `chat` |
+| `chatcolors` | the `chatColors` body from `GET /api/settings` (broadcast after `PUT /api/settings/chatcolors`) |
 
 ---
 
@@ -183,6 +187,35 @@ private, clientdemos`.
 
 ---
 
+## Mods (local folder, path set in Settings)
+
+Each subfolder of the mods folder is a mod. Name/version are read from
+`*.uplugin` / `mod.json` (when present). Settings files are
+`.cfg/.ini/.json/.txt/.config` inside the mod folder (walk depth ≤ 6, Unreal
+service folders — `Content`, `Binaries`, `Intermediate` etc. — are skipped,
+at most 64 files per mod). Files larger than 2 MB are marked `editable:false`
+and cannot be opened in the editor.
+
+### GET /api/mods
+→ `{"dir":"C:\\mods","mods":[{"id":"123456789","name":"MyMod","version":"1.2",
+"modifiedAt":"...","hasConfig":true,"configFiles":[{"path":"Config/MyMod.cfg",
+"size":1234,"modifiedAt":"...","editable":true}]}]}`
+`hasConfig:false` — the mod has not created its settings files yet (they
+usually appear after the first game launch with the mod); the UI shows the
+"will appear after the game starts" status and re-reads the list on every
+server process start/stop.
+
+### GET /api/mods/file?mod=<id>&path=<relative path>
+→ `{"mod":"...","path":"...","content":"...","modifiedAt":"..."}`
+
+### PUT /api/mods/file  `{"mod":"...","path":"...","content":"..."}`
+Writes only to an already existing file (new files are created by the mod
+itself). Before writing — a `<file>.bak-<time>` backup (the last 10 are kept),
+the write is atomic, CRLF is normalized for non-JSON files. The path is
+strictly inside the mod folder (`..` is discarded). Audit: `mods.write`.
+
+---
+
 ## Logs (local file tail)
 
 ### GET /api/logs/events?type=all|chat|teamkill|join|leave|admin|error&query=&limit=200
@@ -190,7 +223,8 @@ private, clientdemos`.
 ```json
 LogEvent = { "id": 1, "at": "2026-08-02T15:00:00Z", "type": "chat",
   "channel": "ChatAll|ChatTeam|ChatSquad|ChatAdmin", "playerName": "...",
-  "steamID": "...", "eosID": "...", "text": "...", "raw": "исходная строка" }
+  "steamID": "...", "eosID": "...", "role": "SuperAdmin",
+  "text": "...", "raw": "исходная строка" }
 ```
 <!-- "исходная строка" = raw log line -->
 ### GET /api/logs/raw?lines=300 → `{"lines":["..."]}`
@@ -253,14 +287,27 @@ Types and `config`:
               "configDir": "", "logFile": "",
               "exePath": "C:\\servers\\SquadServer\\SquadGameServer.exe",
               "exeArgs": "Port=7787 QueryPort=27165 RCONPORT=21114",
-              "stopGraceSec": 10, "autoRestart": false } }
+              "stopGraceSec": 10, "autoRestart": false },
+  "chatColors": { "enabled": true, "adminChannel": "#e8a33d",
+                  "roles": { "SuperAdmin": "#e05d5d", "Moderator": "#4f9dde" } },
+  "chatRoles": ["SuperAdmin", "Moderator", "Whitelist"] }
 ```
 `configDir`/`logFile` empty = derived from `dir` (`<dir>/SquadGame/ServerConfig`,
 `<dir>/SquadGame/Saved/Logs/SquadGame.log`).
+`chatColors` — chat message highlighting: `roles` maps an Admins.cfg group name to a hex color,
+`adminChannel` is the color for `ChatAdmin` channel messages without a role color (empty = no highlight).
+`chatRoles` — the current list of groups from Admins.cfg (for the settings form).
 ### PUT /api/settings/general | /api/settings/rcon | /api/settings/server
 Empty password or `********` = keep the stored value unchanged.
+### PUT /api/settings/chatcolors
+Body: `{"enabled":true,"adminChannel":"#e8a33d","roles":{"SuperAdmin":"#e05d5d"}}`.
+Colors are `#rgb`/`#rrggbb`; an empty color = no highlight. Roles with empty colors are dropped.
+→ `{"ok":true,"chatColors":{...}}` + a `chatcolors` SSE event to all connected tabs.
 ### POST /api/settings/rcon/test → `{"ok":true,"detail":"Подключено, сервер: ..."}` <!-- "Подключено, сервер: ..." = "Connected, server: ..." -->
 ### POST /api/settings/server/test → `{"ok":true,"detail":"Папка найдена, конфиги: 5 файлов, лог найден"}` <!-- "Папка найдена, конфиги: 5 файлов, лог найден" = "Folder found, configs: 5 files, log found" -->
+### PUT /api/settings/mods  `{"modsDir":"C:\\mods"}`
+An empty string disables the Mods section. Stored in `config.json` → `server.modsDir`.
+### POST /api/settings/mods/test → `{"ok":true,"detail":"папка модов найдена, модов: 3"}` <!-- "папка модов найдена, модов: 3" = "mods folder found, mods: 3" -->
 
 ---
 

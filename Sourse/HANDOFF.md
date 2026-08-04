@@ -50,12 +50,13 @@ Squad-сервер, поднимает веб-панель на `http://127.0.0.
 | `internal/rcon/squad.go` | 281 | Парсеры ListPlayers, ListSquads, карт, слоёв, чата, ShowServerInfo |
 | `internal/rcon/manager.go` | 341 | Фоновый цикл: автоподключение, реконнект, опрос, кэш-снапшот |
 | `internal/confedit/confedit.go` | 284 | Список и правка `.cfg` с бэкапами, структурный Admins.cfg, ротация карт |
+| `internal/mods/mods.go` | ~360 | Вкладка «Моды» (1.0.8): скан папки модов, имя/версия из `.uplugin`/`mod.json`, правка файлов настроек с бэкапами |
 | `internal/logwatch/logwatch.go` | 290 | Tail `SquadGame.log`, события join/leave/error/teamkill |
 | `internal/procman/procman.go` | ~800 | Старт/стоп/рестарт сервера (с opMu против двойного старта), поиск и честная остановка процесса, авторестарт |
 | `internal/automation/automation.go` | 1088 | Планировщик, 5 типов правил из API.md |
 | `internal/web/server.go` | ~960 | Каркас HTTP: маршруты, SSE-хаб, статус, игроки, консоль, карты, статика (авторизация удалена) |
 | `internal/web/handlers.go` | ~995 | Баны, база игроков, конфиги, логи, процесс, автоматизация, журнал, настройки |
-| `internal/web/static/app.js` | ~4000 | SPA: i18n-слой (первые ~600 строк) + ядро (роутер, SSE, модалки, тосты) + 12 разделов |
+| `internal/web/static/app.js` | ~4700 | SPA: i18n-слой (первые ~650 строк) + ядро (роутер, SSE, модалки, тосты) + 13 разделов |
 | `internal/web/static/index.html` | ~185 | Каркас страницы, SVG-спрайт иконок, часы |
 | `internal/web/static/style.css` | ~800 | Тема «Полевой командный пункт» (милитари-хаки) |
 | `internal/web/static/fonts/` | 16 файлов | Oswald / Inter / JetBrains Mono, woff2, latin + cyrillic |
@@ -396,3 +397,22 @@ Go-код почти не тронут: изменены `Version` и MIME/кэ�
 - **`style.css`** — стиль кнопки `#lang-toggle` добавлен рядом с `#theme-toggle`.
 - **`const Version`** в `internal/web/server.go` = `"1.0.6"`.
 - Футер `index.html` обновлён до версии 1.0.6.
+
+## Изменения в 1.0.7 (цвета чата по ролям)
+
+- **Подсветка сообщений чата по роли отправителя.** Новый пакет
+  `internal/roles` — резолвер «SteamID/EOS-id → группа из Admins.cfg» с ленивым
+  перечитыванием файла по mtime/размеру. Используется в `main.go` при приёме
+  сообщения чата.
+- **БД**: `schemaVersion` поднята до 2 — миграция добавляет колонку `role`
+  в `log_events`; поле `Role` в `store.LogEvent` (JSON `role`).
+- **Конфиг**: секция `chatColors` в `config.json`
+  (`enabled` / `adminChannel` / `roles`), дефолты в `internal/config`.
+- **API**: `GET /api/settings` дополнен `chatColors` и `chatRoles`;
+  новый `PUT /api/settings/chatcolors` (валидация hex-цветов) + SSE-событие
+  `chatcolors` для живого обновления открытых вкладок. См. `API.md`.
+- **Фронтенд**: подсветка в ленте дашборда и «Логи → События»
+  (`chatColorFor`/`chatColorStyle` в `app.js`), карточка «Цвета чата» в
+  Настройках, переводы RU/EN, стили `.cc-row` в `style.css`.
+- **`const Version`** в `internal/web/server.go` = `"1.0.7"`; футер
+  `index.html` обновлён.

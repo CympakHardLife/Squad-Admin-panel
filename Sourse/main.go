@@ -23,6 +23,7 @@ import (
 	"squadadmin/internal/logwatch"
 	"squadadmin/internal/procman"
 	"squadadmin/internal/rcon"
+	"squadadmin/internal/roles"
 	"squadadmin/internal/store"
 	"squadadmin/internal/web"
 )
@@ -58,6 +59,9 @@ func main() {
 	// ── процесс сервера ──
 	pm := procman.New(cfg, rm)
 
+	// ── роли из Admins.cfg (подсветка чата) ──
+	rolesRes := roles.New(cfg.ConfigDir)
+
 	// ── планировщик автоматизации ──
 	// hub появится позже, поэтому уведомления идут через переадресацию
 	var noticeSink func(level, text string)
@@ -70,7 +74,7 @@ func main() {
 
 	// ── HTTP-слой ──
 	srv := web.New(web.Deps{
-		Config: cfg, Store: st, Rcon: rm, Log: lw, Proc: pm, Auto: sched,
+		Config: cfg, Store: st, Rcon: rm, Log: lw, Proc: pm, Auto: sched, Roles: rolesRes,
 	})
 	hub := srv.Hub()
 
@@ -95,7 +99,8 @@ func main() {
 		e := &store.LogEvent{
 			Type: "chat", Channel: msg.Channel, PlayerName: msg.Name,
 			SteamID: msg.SteamID, EosID: msg.EosID, Text: msg.Message,
-			Raw: fmt.Sprintf("[%s] %s: %s", msg.Channel, msg.Name, msg.Message),
+			Role: rolesRes.Resolve(msg.SteamID, msg.EosID),
+			Raw:  fmt.Sprintf("[%s] %s: %s", msg.Channel, msg.Name, msg.Message),
 		}
 		st.LogEventAdd(e)
 		hub.Broadcast("chat", e)

@@ -19,11 +19,13 @@ English version: API-EN.md
 | Игроки, консоль, карты, баны, база игроков, автоматизация | только RCON |
 | Конфиги сервера, логи | путь к папке Squad-сервера на этом же диске |
 | Запуск, остановка, рестарт, авторестарт при падении | путь к exe сервера (локальный процесс) |
+| Моды | путь к папке с модами на этом же диске |
 
 Если путь к серверу не указан — `/api/configs/*` и `/api/logs/*` возвращают 409
 `{"error":"Путь к папке Squad-сервера не настроен","code":"server_dir_not_configured"}`,
-`/api/process/*` — 409 `{"code":"process_not_configured"}`.
-UI прячет соответствующие разделы (см. `GET /api/status` → `remote.configured`, `process.supported`).
+`/api/process/*` — 409 `{"code":"process_not_configured"}`,
+`/api/mods*` без пути к папке модов — 409 `{"code":"mods_dir_not_configured"}`.
+UI прячет соответствующие разделы (см. `GET /api/status` → `remote.configured`, `process.supported`, `mods.configured`).
 
 ---
 
@@ -57,6 +59,7 @@ UI прячет соответствующие разделы (см. `GET /api/s
   "rcon": { "configured": true, "connected": true, "host": "1.2.3.4", "port": 21114,
             "lastError": "", "latencyMs": 42, "lastUpdate": "2026-08-02T15:00:00Z" },
   "remote": { "configured": false, "lastError": "" },
+  "mods": { "configured": false },
   "server": {
     "name": "MyServer #1", "playerCount": 78, "maxPlayers": 100,
     "publicQueue": 3, "reserveQueue": 0,
@@ -81,6 +84,7 @@ UI прячет соответствующие разделы (см. `GET /api/s
 | `log` | `LogEvent` (см. ниже) |
 | `notice` | `{"level":"info\|warn\|error","text":"..."}` |
 | `chat` | `LogEvent` типа `chat` |
+| `chatcolors` | тело `chatColors` из `GET /api/settings` (рассылается после `PUT /api/settings/chatcolors`) |
 
 ---
 
@@ -184,6 +188,33 @@ private, clientdemos`.
 
 ---
 
+## Моды (локальная папка, путь задаётся в настройках)
+
+Каждая подпапка папки модов — мод. Имя/версия читаются из `*.uplugin` /
+`mod.json` (если есть). Файлами настроек считаются `.cfg/.ini/.json/.txt/.config`
+внутри папки мода (глубина обхода ≤ 6, служебные папки Unreal — `Content`,
+`Binaries`, `Intermediate` и т.п. — пропускаются, максимум 64 файла на мод).
+Файлы крупнее 2 МБ помечаются `editable:false` и в редакторе не открываются.
+
+### GET /api/mods
+→ `{"dir":"C:\\mods","mods":[{"id":"123456789","name":"MyMod","version":"1.2",
+"modifiedAt":"...","hasConfig":true,"configFiles":[{"path":"Config/MyMod.cfg",
+"size":1234,"modifiedAt":"...","editable":true}]}]}`
+`hasConfig:false` — мод ещё не создал файлы настроек (обычно они появляются
+после первого запуска игры с модом); UI показывает статус «появятся после
+запуска игры» и перечитывает список при каждом старте/остановке процесса.
+
+### GET /api/mods/file?mod=<id>&path=<относительный путь>
+→ `{"mod":"...","path":"...","content":"...","modifiedAt":"..."}`
+
+### PUT /api/mods/file  `{"mod":"...","path":"...","content":"..."}`
+Пишет только в уже существующий файл (новые файлы создаёт сам мод). Перед
+записью — бэкап `<файл>.bak-<время>` (хранятся последние 10), запись атомарная,
+для не-JSON файлов нормализуется CRLF. Путь строго внутри папки мода
+(`..` отбрасывается). Аудит: `mods.write`.
+
+---
+
 ## Логи (локальный tail файла)
 
 ### GET /api/logs/events?type=all|chat|teamkill|join|leave|admin|error&query=&limit=200
@@ -191,7 +222,8 @@ private, clientdemos`.
 ```json
 LogEvent = { "id": 1, "at": "2026-08-02T15:00:00Z", "type": "chat",
   "channel": "ChatAll|ChatTeam|ChatSquad|ChatAdmin", "playerName": "...",
-  "steamID": "...", "eosID": "...", "text": "...", "raw": "исходная строка" }
+  "steamID": "...", "eosID": "...", "role": "SuperAdmin",
+  "text": "...", "raw": "исходная строка" }
 ```
 ### GET /api/logs/raw?lines=300 → `{"lines":["..."]}`
 ### GET /api/logs/state → `{"tailing":true,"offset":123456,"file":"SquadGame.log","lastReadAt":"..."}`
@@ -251,14 +283,27 @@ LogEvent = { "id": 1, "at": "2026-08-02T15:00:00Z", "type": "chat",
               "configDir": "", "logFile": "",
               "exePath": "C:\\servers\\SquadServer\\SquadGameServer.exe",
               "exeArgs": "Port=7787 QueryPort=27165 RCONPORT=21114",
-              "stopGraceSec": 10, "autoRestart": false } }
+              "stopGraceSec": 10, "autoRestart": false },
+  "chatColors": { "enabled": true, "adminChannel": "#e8a33d",
+                  "roles": { "SuperAdmin": "#e05d5d", "Moderator": "#4f9dde" } },
+  "chatRoles": ["SuperAdmin", "Moderator", "Whitelist"] }
 ```
 `configDir`/`logFile` пустые = вывести из `dir` (`<dir>/SquadGame/ServerConfig`,
 `<dir>/SquadGame/Saved/Logs/SquadGame.log`).
+`chatColors` — подсветка сообщений чата: `roles` — карта «группа из Admins.cfg → hex-цвет»,
+`adminChannel` — цвет сообщений канала `ChatAdmin` без цвета роли (пусто = не подсвечивать).
+`chatRoles` — актуальный список групп из Admins.cfg (для формы настройки).
 ### PUT /api/settings/general | /api/settings/rcon | /api/settings/server
 Пустой пароль или `********` = не менять сохранённый.
+### PUT /api/settings/chatcolors
+Тело: `{"enabled":true,"adminChannel":"#e8a33d","roles":{"SuperAdmin":"#e05d5d"}}`.
+Цвета — `#rgb`/`#rrggbb`; пустой цвет = не подсвечивать. Роли с пустым цветом отбрасываются.
+→ `{"ok":true,"chatColors":{...}}` + SSE-событие `chatcolors` всем подключённым вкладкам.
+### PUT /api/settings/mods  `{"modsDir":"C:\\mods"}`
+Пустая строка = отключить раздел «Моды». Хранится в `config.json` → `server.modsDir`.
 ### POST /api/settings/rcon/test → `{"ok":true,"detail":"Подключено, сервер: ..."}`
 ### POST /api/settings/server/test → `{"ok":true,"detail":"Папка найдена, конфиги: 5 файлов, лог найден"}`
+### POST /api/settings/mods/test → `{"ok":true,"detail":"папка модов найдена, модов: 3"}`
 
 ---
 
