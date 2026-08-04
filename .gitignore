@@ -1,32 +1,31 @@
-# If you prefer the allow list template instead of the deny list, see community template:
-# https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
-#
-# Binaries for programs and plugins
-*.exe
-*.exe~
+# === SquadAdmin runtime files (never commit) ===
+config.json
+data.db
+data.db-shm
+data.db-wal
+*.bak-*
+*.log
+
+# === Build output ===
+/bin/
+/dist/
+/build/
+
+# NOTE: SquadAdmin.exe IS committed on purpose so users can download it
+# straight from the repository. Everything else binary stays ignored.
 *.dll
 *.so
 *.dylib
-
-# Test binary, built with `go test -c`
 *.test
-
-# Code coverage profiles and other test artifacts
 *.out
-coverage.*
-*.coverprofile
-profile.cov
-
-# Dependency directories (remove the comment below to include it)
-# vendor/
-
-# Go workspace file
+vendor/
 go.work
 go.work.sum
 
-# env file
-.env
-
-# Editor/IDE
-# .idea/
-# .vscode/
+# === Editors / OS ===
+.vscode/
+.idea/
+*.swp
+Thumbs.db
+desktop.ini
+.DS_Store
