@@ -327,6 +327,11 @@ new files: the mod itself must generate them.
 
 ---
 
+## 🆕 What's New in 1.0.9
+
+This release is about one thing: **server paths that just work**. No new sections — the Settings →
+Server form simply stopped being picky.
+
 ## 🆕 What's New in 1.0.8
 
 ### 🧱 Mods section
