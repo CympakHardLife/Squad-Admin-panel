@@ -6,6 +6,7 @@
 
 **English** · [Русский](README.ru.md)
 
+[![CI](https://github.com/CympakHardLife/Squad-Admin-panel/actions/workflows/ci.yml/badge.svg)](https://github.com/CympakHardLife/Squad-Admin-panel/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-22c55e.svg?style=for-the-badge)](LICENSE)
 [![Go](https://img.shields.io/badge/Go-1.25-00ADD8?style=for-the-badge&logo=go&logoColor=white)](https://go.dev)
 [![Platform](https://img.shields.io/badge/Platform-Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)]()
@@ -50,11 +51,25 @@ Journal, logs and notifications are translated too.
 
 ---
 
+## 📸 Screenshots
+
+<div align="center">
+
+<img src="docs/screenshots/1.png" width="900" alt="SquadAdmin — overview">
+<br><br>
+<img src="docs/screenshots/2.png" width="900" alt="SquadAdmin — players">
+<br><br>
+<img src="docs/screenshots/3.png" width="900" alt="SquadAdmin — configs">
+
+</div>
+
+---
+
 ## 🚀 Quick Start
 
 ```text
 1. Copy SquadAdmin.exe into its own folder, e.g. C:\SquadAdmin\
-   ⚠️  Do NOT put it inside your Squad server folder — it creates its own files.
+   WARNING: do NOT put it inside your Squad server folder — it creates its own files.
 2. Double-click to run.
 3. SmartScreen warning → "More info" → "Run anyway"
    (normal for apps without a paid code-signing certificate).
@@ -259,12 +274,6 @@ top bar (also in Settings → Appearance → Interface language).
 *"I'm not a master at anything, I'm a simple person without education, I do what I like."*
 
 **This program was written by me with the help of [Fable 5](https://www.anthropic.com).**
-   
-<br>
-
-<img src="docs/screenshots/1.png" width="900" alt="SquadAdmin — 1">
-<img src="docs/screenshots/2.png" width="900" alt="SquadAdmin — 2">
-<img src="docs/screenshots/3.png" width="900" alt="SquadAdmin — 3">
 
 </div>
 
