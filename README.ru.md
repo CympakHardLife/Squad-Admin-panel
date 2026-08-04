@@ -6,6 +6,7 @@
 
 [English](README.md) · **Русский**
 
+[![CI](https://github.com/CympakHardLife/Squad-Admin-panel/actions/workflows/ci.yml/badge.svg)](https://github.com/CympakHardLife/Squad-Admin-panel/actions/workflows/ci.yml)
 [![Лицензия: MIT](https://img.shields.io/badge/%D0%9B%D0%B8%D1%86%D0%B5%D0%BD%D0%B7%D0%B8%D1%8F-MIT-22c55e.svg?style=for-the-badge)](LICENSE)
 [![Go](https://img.shields.io/badge/Go-1.25-00ADD8?style=for-the-badge&logo=go&logoColor=white)](https://go.dev)
 [![Платформа](https://img.shields.io/badge/%D0%9F%D0%BB%D0%B0%D1%82%D1%84%D0%BE%D1%80%D0%BC%D0%B0-Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)]()
@@ -50,11 +51,25 @@
 
 ---
 
+## 📸 Скриншоты
+
+<div align="center">
+
+<img src="docs/screenshots/1.png" width="900" alt="SquadAdmin — обзор">
+<br><br>
+<img src="docs/screenshots/2.png" width="900" alt="SquadAdmin — игроки">
+<br><br>
+<img src="docs/screenshots/3.png" width="900" alt="SquadAdmin — конфиги">
+
+</div>
+
+---
+
 ## 🚀 Быстрый старт
 
 ```text
 1. Скопируйте SquadAdmin.exe в отдельную папку, например C:\SquadAdmin\
-   ⚠️  НЕ кладите его в папку Squad-сервера — рядом с exe создаются свои файлы.
+   ВНИМАНИЕ: НЕ кладите его в папку Squad-сервера — рядом с exe создаются свои файлы.
 2. Запустите двойным щелчком.
 3. Предупреждение SmartScreen → «Подробнее» → «Выполнить в любом случае»
    (это нормально для программ без платной цифровой подписи).
@@ -262,12 +277,6 @@ C:\SquadAdmin\
 *«Я ни в чём не мастер, я простой человек без образования, делаю то, что мне нравится)»*
 
 **Эта программа написана мной с помощью [Fable 5](https://www.anthropic.com).**
-   
-<br>
-
-<img src="docs/screenshots/1.png" width="900" alt="SquadAdmin — 1">
-<img src="docs/screenshots/2.png" width="900" alt="SquadAdmin — 2">
-<img src="docs/screenshots/3.png" width="900" alt="SquadAdmin — 3">
 
 </div>
 
