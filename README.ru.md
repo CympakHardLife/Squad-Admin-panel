@@ -262,6 +262,12 @@ C:\SquadAdmin\
 *«Я ни в чём не мастер, я простой человек без образования, делаю то, что мне нравится)»*
 
 **Эта программа написана мной с помощью [Fable 5](https://www.anthropic.com).**
+   
+<br>
+
+<img src="docs/screenshots/1.png" width="900" alt="SquadAdmin — 1">
+<img src="docs/screenshots/2.png" width="900" alt="SquadAdmin — 2">
+<img src="docs/screenshots/3.png" width="900" alt="SquadAdmin — 3">
 
 </div>
 
