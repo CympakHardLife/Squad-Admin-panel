@@ -259,6 +259,12 @@ top bar (also in Settings → Appearance → Interface language).
 *"I'm not a master at anything, I'm a simple person without education, I do what I like."*
 
 **This program was written by me with the help of [Fable 5](https://www.anthropic.com).**
+   
+<br>
+
+<img src="docs/screenshots/1.png" width="900" alt="SquadAdmin — 1">
+<img src="docs/screenshots/2.png" width="900" alt="SquadAdmin — 2">
+<img src="docs/screenshots/3.png" width="900" alt="SquadAdmin — 3">
 
 </div>
 
@@ -279,12 +285,6 @@ Copyright (c) 2026 Cympak (CympakHardLife)
 ---
 
 <div align="center">
-   
-<br>
-
-<img src="docs/screenshots/1.png" width="900" alt="SquadAdmin — 1">
-<img src="docs/screenshots/2.png" width="900" alt="SquadAdmin — 2">
-<img src="docs/screenshots/3.png" width="900" alt="SquadAdmin — 3">
 
 ⭐ **If SquadAdmin helps you run your server, consider starring the repository.**
 
